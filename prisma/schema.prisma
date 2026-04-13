@@ -1,0 +1,218 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Role {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  status      RoleStatus    @default(ACTIVE)
+  isDeleted   Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  roleFeature RoleFeature[]
+  adminUser   AdminUser[]
+}
+
+model RoleFeature {
+  id     String @id @default(uuid())
+  name   String
+  index  Int
+  path   String
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+}
+
+enum AdminUserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model AdminUser {
+  id           String          @id @default(uuid())
+  fullName     String
+  email        String          @unique
+  password     String
+  profilePhoto String?         @db.Text
+  status       AdminUserStatus @default(ACTIVE)
+  roleId       String
+  role         Role            @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  services  Service[]
+  projects  Project[]
+  blogs     Blog[]
+}
+
+model Service {
+  id                String             @id @default(uuid())
+  thumbnail         String?            @db.Text
+  title             String
+  description       String?            @db.Text
+  categoryId        String
+  category          Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  subServices       SubService[]
+  whyChooseServices WhyChooseService[]
+}
+
+model SubService {
+  id                 String              @id @default(uuid())
+  title              String
+  description        String?             @db.Text
+  serviceId          String
+  service            Service             @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  subServiceFeatures SubServiceFeature[]
+}
+
+model SubServiceFeature {
+  id           String     @id @default(uuid())
+  name         String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  subServiceId String
+  subServices  SubService @relation(fields: [subServiceId], references: [id], onDelete: Cascade)
+}
+
+model WhyChooseService {
+  id        String   @id @default(uuid())
+  title     String
+  Service   Service  @relation(fields: [serviceId], references: [id])
+  serviceId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceTool {
+  id     String  @id @default(uuid())
+  name   String
+  slogan String
+  icon   String? @db.Text
+}
+
+model IndustryWeServe {
+  id        String   @id @default(uuid())
+  name      String
+  icon      String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id                String             @id @default(uuid())
+  name              String
+  description       String?            @db.Text
+  liveUrl           String?            @db.Text
+  demoUrl           String?            @db.Text
+  thumbnail         String?            @db.Text
+  startDate         DateTime?
+  endDate           DateTime?
+  author            String
+  categoryId        String
+  category          Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  projectFeatures   ProjectFeature[]
+  projectTechStacks ProjectTechStack[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model ProjectFeature {
+  id        String   @id @default(uuid())
+  name      String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectTechStack {
+  id        String   @id @default(uuid())
+  name      String
+  icon      String?  @db.Text
+  slogan    String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  id          String       @id @default(uuid())
+  name        String
+  position    String
+  photo       String?      @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  teamSocials TeamSocial[]
+}
+
+model TeamSocial {
+  id        String   @id @default(uuid())
+  link      String
+  name      String
+  icon      String?  @db.Text
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String?  @db.Text
+  message   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscribe {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Blog {
+  id           String        @id @default(uuid())
+  title        String
+  content      String?       @db.Text
+  thumbnail    String?       @db.Text
+  author       String        @default("Admin")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  categoryId   String
+  category     Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  blogComments BlogComment[]
+}
+
+model BlogComment {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  content   String?  @db.Text
+  blogId    String
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
