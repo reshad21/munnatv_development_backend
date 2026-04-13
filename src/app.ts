@@ -46,8 +46,13 @@ app.use(globalErrorHandler);
 // 404 Not Found middleware
 app.use(notFoundErrorHandler);
 
-// Running the server
-app.listen(config.PORT, () => {
-  seedRoleAdmin();
-  console.log(`Server is running on port ${config.PORT}`);
-});
+// Export app for Vercel
+export default app;
+
+// Running the server locally only
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(config.PORT, () => {
+    seedRoleAdmin();
+    console.log(`Server is running on port ${config.PORT}`);
+  });
+}
